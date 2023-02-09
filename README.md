@@ -1,10 +1,22 @@
 # 微博舆论监控系统
  
 ## 项目介绍
-使用爬虫周期性地爬取微博热搜榜，获取热搜列表，每条热搜内的热门微博和每条微博的评论。使用文本分类算法对每条评论进行情感分析，将所有微博数据和情感分析的结果存储在Redis里。运行Web服务直观地展示微博数据和情感分析结果。
+这个系统目前采用IDEA开发软件，使用Springboot开发微博舆论监控系统，使其对微博进行一定的有效管理。网站主要设计和实现对微博热点新闻进行获取和展示，采用短文本情感分类技术对微博评论进行一定的训练使其能够通过算法进行自动化的分类，并以图表的形式展示评论的情感分类。对于愤怒值过高的新闻将进行告警服务，并且可以展示告警日志。除此之外，还采用随机森林回归模型对用户画像的特征重要性进行分析，并进行Chart图展示。
+
 
 Web界面：
-![Web界面](https://i.loli.net/2020/04/02/8Ru3WO6KYhwixJB.png)
+首页————热搜评论文本情感分类算法：
+![image](https://i.postimg.cc/GtzLJxyt/Screen-Shot-2023-02-08-at-16-16-14.png)
+
+词云展示————评论热词展示：
+![image](https://i.postimg.cc/GtzLJxyt/Screen-Shot-2023-02-08-at-16-16-14.png)
+
+用户画像————展示微博用户基本数据：
+![image](https://i.postimg.cc/hjDTSpcP/Screen-Shot-2023-02-08-at-16-28-12.png)
+
+。。。。。。。。
+
+更多功能已部署在线上：3.252.123.47:8080
 
 ## 项目结构介绍
 
@@ -37,7 +49,7 @@ Web服务由`Spring Boot`支持，后端从Redis读取数据（其实数据可�
 ## 运行准备
 
 ### 1.设置Redis服务器地址
-找到`RedisUtil`，修改`ADDR`为你服务器的ip地址，如果Redis服务器设置了密码就将`AUTH`改为你的密码。
+redis线上服务器ip：3.252.123.47:6379
 
 ### 2.设置HTTP请求参数
 由于微博的限制，未登录的账户只能获取到第一页微博评论。为了爬取更多评论你需要在浏览器中登录`m.weibo.cn`，浏览微博评论列表，然后打开浏览器的开发者工具查看你发送的`hotflow?id=...`请求（这是请求评论request）里的Cookie，将其复制到`HttpUtil`类里的`header("cookie", "")`的第二个参数里。
@@ -47,7 +59,6 @@ Web服务由`Spring Boot`支持，后端从Redis读取数据（其实数据可�
 ### 3.下载分词所需的数据
 本项目使用的分词工具为[HanLP](https://github.com/hankcs/HanLP/tree/1.x)，为了分词更准确它需要一些额外的数据。
 
-下载[data.zip](http://nlp.hankcs.com/download.php?file=data)，解压后将`data`目录复制到`src/main/resources`目录下即可（分词只用到data/dictionary目录，可以将data/model目录删除节省空间），HanLP会自动在classpath下面找到数据。
 
 ### 4.设置模型及语料的路径
 我提供了一些基本的语料作为参考，在`src/main/resources/train`目录下。
@@ -58,15 +69,4 @@ Web服务由`Spring Boot`支持，后端从Redis读取数据（其实数据可�
 
 > 如果想要使用其他的语料训练模型，可以复制积极情绪语料`pos.txt`和消极情绪语料`neg.txt`的绝对路径到`Train`类相应的路径。
 
-## 运行
-* 下载了`pox.xml`中依赖的包后，在IDE中直接运行`Application`类中的main函数。
-* 或者使用`mvn clean package`命令将项目打包成jar，使用`java -jar *.jar`运行。
 
-看控制台的输出，爬完一次微博后在浏览器打开`http://localhost:8080`查看Web页面。
-
-## 自定义参数
-由于微博翻爬虫系统对爬虫的限制非常严重，所以我设置的爬取速度非常慢，每次爬取的微博数量比较少，如果你解决了微博反爬问题，可以自定义这些参数提高爬取效率。
-* 在`Application`类设置`Timer`的`period`参数调整定时爬虫任务的周期（默认30分钟运行一次）；
-* 在`CrawlTask`类设置一次爬取热搜榜上的热搜个数`HOT_LIST_SIZE`（默认为10条），每条热搜下微博个数`WB_LIST_SIZE`（默认为一条），每条微博评论的页数`CM_LIST_SIZE`（默认为5页，一页20条评论）；
-* 在`CrawlTask`类设置每次爬取的数据存在Redis中的过期时间`KEY_EXPIRE_TIME`（默认一小时后过期）。
-  https://github.com/kongxr123/desktop-tutorial.git
